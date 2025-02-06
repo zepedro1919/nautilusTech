@@ -28,11 +28,33 @@ import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 
 // Data
-import authorsTableData from "layouts/tables/data/authorsTableData";
+import fetchMachineLogs from "layouts/tables/data/authorsTableData";
 import projectsTableData from "layouts/tables/data/projectsTableData";
 
-function Tables() {
-  const { columns, rows } = authorsTableData();
+import React, { useState, useEffect } from "react";
+
+const MachineUsageTable = () => {
+  const [ usageData, setUsageData ] = useState({ columns: [], rows: [] });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const logs = await fetchMachineLogs();
+        setUsageData(prevData => {
+          if (JSON.stringify(prevData) !== JSON.stringify(logs)) {
+            return logs;
+          }
+          return prevData;
+        });
+      } catch (err) {
+        console.error("Error fetching machine logs:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const { columns, rows } = usageData;
   const { columns: pColumns, rows: pRows } = projectsTableData();
 
   return (
@@ -53,7 +75,7 @@ function Tables() {
                 coloredShadow="info"
               >
                 <MDTypography variant="h6" color="white">
-                  Authors Table
+                  Usage Logs
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
@@ -80,7 +102,7 @@ function Tables() {
                 coloredShadow="info"
               >
                 <MDTypography variant="h6" color="white">
-                  Projects Table
+                  Maintenance Logs
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
@@ -101,4 +123,4 @@ function Tables() {
   );
 }
 
-export default Tables;
+export default MachineUsageTable;

@@ -14,7 +14,7 @@ Coded by www.creative-tim.com
 */
 
 // Images
-import kal from "assets/images/kal-visuals-square.jpg";
+import sergio from "assets/images/ManuelSergio.jpg";
 import marie from "assets/images/marie.jpg";
 import ivana from "assets/images/ivana-square.jpg";
 import team3 from "assets/images/team-3.jpg";
@@ -22,9 +22,9 @@ import team4 from "assets/images/team-4.jpg";
 
 export default [
   {
-    image: kal,
-    name: "Sophie B.",
-    description: "Hi! I need more information..",
+    image: sergio,
+    name: "Manuel Sérgio",
+    description: "Responsável Marcenaria",
     action: {
       type: "internal",
       route: "/pages/profile/profile-overview",

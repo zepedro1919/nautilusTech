@@ -15,6 +15,9 @@ Coded by www.creative-tim.com
 
 import { useState, useEffect } from "react";
 
+// Data
+import profilesListData from "layouts/profile/data/profilesListData";
+
 // prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
 
@@ -35,10 +38,9 @@ import MDAvatar from "components/MDAvatar";
 import breakpoints from "assets/theme/base/breakpoints";
 
 // Images
-import burceMars from "assets/images/bruce-mars.jpg";
 import backgroundImage from "assets/images/bg-profile.jpeg";
 
-function Header({ children }) {
+function Header({ children, name, position, profilePhoto }) {
   const [tabsOrientation, setTabsOrientation] = useState("horizontal");
   const [tabValue, setTabValue] = useState(0);
 
@@ -94,15 +96,15 @@ function Header({ children }) {
       >
         <Grid container spacing={3} alignItems="center">
           <Grid item>
-            <MDAvatar src={burceMars} alt="profile-image" size="xl" shadow="sm" />
+            <MDAvatar src={profilePhoto} alt="profile-image" size="xl" shadow="sm" />
           </Grid>
           <Grid item>
             <MDBox height="100%" mt={0.5} lineHeight={1}>
               <MDTypography variant="h5" fontWeight="medium">
-                Richard Davis
+                {name}
               </MDTypography>
               <MDTypography variant="button" color="text" fontWeight="regular">
-                CEO / Co-Founder
+                {position}
               </MDTypography>
             </MDBox>
           </Grid>
@@ -146,11 +148,17 @@ function Header({ children }) {
 // Setting default props for the Header
 Header.defaultProps = {
   children: "",
+  name: "User",
+  position: "No Position",
+  profilePhoto: "https://via.placeholder.com/100",
 };
 
 // Typechecking props for the Header
 Header.propTypes = {
   children: PropTypes.node,
+  name: PropTypes.string,
+  position: PropTypes.string,
+  profilePhoto: PropTypes.string,
 };
 
 export default Header;

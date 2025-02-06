@@ -25,6 +25,7 @@ import Icon from "@mui/material/Icon";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
+import MaintenanceAlertPopup from "components/MaintenanceAlertPopup";
 
 // Material Dashboard 2 React example components
 import Sidenav from "examples/Sidenav";
@@ -165,6 +166,7 @@ export default function App() {
           </>
         )}
         {layout === "vr" && <Configurator />}
+        <MaintenanceAlertPopup />
         <Routes>
           {getRoutes(routes)}
           <Route path="*" element={<Navigate to="/dashboard" />} />
@@ -189,6 +191,7 @@ export default function App() {
         </>
       )}
       {layout === "vr" && <Configurator />}
+      <MaintenanceAlertPopup />
       <Routes>
         {getRoutes(routes)}
         <Route path="*" element={<Navigate to="/dashboard" />} />

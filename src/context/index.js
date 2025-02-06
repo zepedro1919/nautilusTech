@@ -18,7 +18,7 @@ Coded by www.creative-tim.com
   you can customize the states for the different components here.
 */
 
-import { createContext, useContext, useReducer, useMemo } from "react";
+import React, { createContext, useState, useEffect, useContext, useReducer, useMemo } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
@@ -108,6 +108,32 @@ MaterialUIControllerProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
+const MaintenanceContext = createContext();
+
+const MaintenanceProvider = ({ children }) => {
+  const [alerts, setAlerts] = useState([]);
+
+  // Fetch maintenance alerts every 30 seconds
+  const fetchMaintenanceAlerts = () => {
+    fetch("http://localhost:5000/maintenance-alerts")
+      .then((res) => res.json())
+      .then((data) => setAlerts(data))
+      .catch((err) => console.error("Error fetching maintenance alerts:", err));
+  };
+
+  useEffect(() => {
+    fetchMaintenanceAlerts();
+    const interval = setInterval(fetchMaintenanceAlerts, 30000); // Fetch every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <MaintenanceContext.Provider value={{ alerts }}>
+      {children}
+    </MaintenanceContext.Provider>
+  )
+}
+
 // Context module functions
 const setMiniSidenav = (dispatch, value) => dispatch({ type: "MINI_SIDENAV", value });
 const setTransparentSidenav = (dispatch, value) => dispatch({ type: "TRANSPARENT_SIDENAV", value });
@@ -133,4 +159,6 @@ export {
   setDirection,
   setLayout,
   setDarkMode,
+  MaintenanceContext,
+  MaintenanceProvider,
 };

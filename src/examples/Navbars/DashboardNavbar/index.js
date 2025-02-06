@@ -13,7 +13,10 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import Badge from "@mui/material/Badge";
 
 // react-router components
 import { useLocation, Link } from "react-router-dom";
@@ -59,6 +62,20 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname.split("/").slice(1);
+  const [alerts, setAlerts] = useState([]);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/maintenance-alerts");
+        setAlerts(response.data);
+      } catch (error) {
+        console.error("Error fetching maintenance alerts:", error);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
 
   useEffect(() => {
     // Setting the navbar type
@@ -144,6 +161,11 @@ function DashboardNavbar({ absolute, light, isMini }) {
                   <Icon sx={iconsStyle}>account_circle</Icon>
                 </IconButton>
               </Link>
+              <IconButton color="inherit">
+                <Badge badgeContent={alerts.length} color="error">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
               <IconButton
                 size="small"
                 disableRipple
