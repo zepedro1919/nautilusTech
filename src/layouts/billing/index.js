@@ -105,34 +105,35 @@ function MachineDetail() {
   };
 
   return machine ? (
-    <>
+    <DashboardLayout>
+      <DashboardNavbar/>
       <Card sx={{ p: 4, textAlign: "center", maxWidth: 500, margin: "auto" }}>
-      <img
-        src={machine.machine_photo_url}
-        alt={machine.name}
-        style={{ width: "100%", height: "auto" }}
-      />
-      <Typography variant="h5">{machine.name}</Typography>
-      <Typography variant="body1">{machine.description}</Typography>
+        <img
+          src={machine.machine_photo_url}
+          alt={machine.name}
+          style={{ width: "100%", height: "auto" }}
+        />
+        <Typography variant="h5">{machine.name}</Typography>
+        <Typography variant="body1">{machine.description}</Typography>
 
-      <Typography variant="h6" mt={2}>
-        Elapsed Time: {elapsedTime} seconds
-      </Typography>
+        <Typography variant="h6" mt={2}>
+          Elapsed Time: {elapsedTime} seconds
+        </Typography>
 
-      <Button variant="contained" color="success" onClick={handleStart} disabled={isRunning}>
-        Start
-      </Button>
-      <Button variant="contained" color="warning" onClick={handleStop} disabled={!isRunning}>
-        Stop
-      </Button>
-      <Button variant="contained" color="error" onClick={handleDone}>
-        Acabei
-      </Button>
-    </Card>
-    </>
+        <Button variant="contained" color="success" onClick={handleStart} disabled={isRunning}>
+          Start
+        </Button>
+        <Button variant="contained" color="warning" onClick={handleStop} disabled={!isRunning}>
+          Stop
+        </Button>
+        <Button variant="contained" color="error" onClick={handleDone}>
+          Acabei
+        </Button>
+      </Card>
+    </DashboardLayout>
   ) : (
     <Typography>Loading Machine Details...</Typography>
-  );
+  )
 }
 
 export default MachineDetail;

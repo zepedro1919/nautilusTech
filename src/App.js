@@ -45,14 +45,15 @@ import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 
 // Material Dashboard 2 React routes
-import routes from "routes";
+import routesConfig from "routes";
+import ProtectedRoute from "components/protectedRoute";
 
 // Material Dashboard 2 React contexts
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
 
 // Images
-import brandWhite from "assets/images/logo-ct.png";
-import brandDark from "assets/images/logo-ct-dark.png";
+import brandWhite from "assets/images/logo_nautilus_branco.png";
+import brandDark from "assets/images/logo_nautilus_preto.png";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -79,6 +80,21 @@ export default function App() {
 
     setRtlCache(cacheRtl);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      console.log("handleLogout function triggered");
+      // Clear authentication token
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href = "/authentication/sign-in";
+
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+  window.handleLogout = handleLogout;
 
   // Open sidenav when mouse enter on mini sidenav
   const handleOnMouseEnter = () => {
@@ -110,19 +126,6 @@ export default function App() {
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
 
-  const getRoutes = (allRoutes) =>
-    allRoutes.map((route) => {
-      if (route.collapse) {
-        return getRoutes(route.collapse);
-      }
-
-      if (route.route) {
-        return <Route exact path={route.route} element={route.component} key={route.key} />;
-      }
-
-      return null;
-    });
-
   const configsButton = (
     <MDBox
       display="flex"
@@ -147,6 +150,30 @@ export default function App() {
     </MDBox>
   );
 
+  const routes = routesConfig(handleLogout);
+
+  console.log("Routes config:", routes);
+
+  const getRoutes = (routes) =>
+    routes.map((route) => {
+
+      if (route.collapse) {
+        return getRoutes(route.collapse);
+      }
+
+      if (route.route) {
+        return route.protected ? (
+        <Route key={route.route} element={<ProtectedRoute />}>
+          <Route exact path={route.route} element={route.component} key={route.key} />
+        </Route>
+        ) : (
+          <Route exact path={route.route} element={route.component} key = {route.key} />
+        );
+      }
+
+      return null;
+    });
+
   return direction === "rtl" ? (
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
@@ -156,8 +183,9 @@ export default function App() {
             <Sidenav
               color={sidenavColor}
               brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-              brandName="Material Dashboard 2"
+              brandName="Nautilus Technology"
               routes={routes}
+              handleLogout={handleLogout}
               onMouseEnter={handleOnMouseEnter}
               onMouseLeave={handleOnMouseLeave}
             />
@@ -183,6 +211,7 @@ export default function App() {
             brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
             brandName="Material Dashboard 2"
             routes={routes}
+            handleLogout={handleLogout}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
           />

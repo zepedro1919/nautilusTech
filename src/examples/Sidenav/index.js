@@ -47,7 +47,7 @@ import {
   setWhiteSidenav,
 } from "context";
 
-function Sidenav({ color, brand, brandName, routes, ...rest }) {
+function Sidenav({ color, brand, brandName, routes, handleLogout, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
@@ -83,16 +83,20 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     return () => window.removeEventListener("resize", handleMiniSidenav);
   }, [dispatch, location]);
 
+  console.log("Routes received in Sidenav:", routes);
+
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
-  const renderRoutes = routes.map(({ type, name, icon, title, noCollapse, key, href, route }) => {
+  const renderRoutes = routes.map(({ type, name, icon, title, noCollapse, key, href, route, disabled, onClick }) => {
     let returnValue;
 
+    console.log("Route rendering", name, "Has onClick?", !!onClick);
+
     if (type === "collapse") {
-      returnValue = href ? (
+      returnValue = href && name !== "Sign Out" ? (
         <Link
           href={href}
           key={key}
-          target="_blank"
+          target={"_blank"}
           rel="noreferrer"
           sx={{ textDecoration: "none" }}
         >
@@ -103,8 +107,42 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             noCollapse={noCollapse}
           />
         </Link>
+      ) : name === "Sign Out" ? (
+        <button
+          key={key}
+          onClick={(event) => {
+            event.preventDefault();
+            console.log("Click detected on Sign Out");
+            if (onClick) {
+              console.log("Executing onClick function for:", name);
+              onClick();
+            }
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            color: "inherit",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            opacity: disabled ? 0.5 : 1, // Greyed out if disabled
+            pointerEvents: disabled ? "none" : "auto", // Disable clicks
+          }}
+        >
+          <SidenavCollapse name={name} icon={icon} active={key === collapseName} />
+        </button>
       ) : (
-        <NavLink key={key} to={route}>
+        <NavLink 
+          key={key} 
+          to={route}
+          style ={{
+            textDecoration: "none",
+            color: disabled ? "#a0a0a0" : "inherit",
+            pointerEvents: disabled ? "none" : "auto", // Disable clicks
+            opacity: disabled ? 0.5 : 1, // Make it look faded
+          }}
+        >
           <SidenavCollapse name={name} icon={icon} active={key === collapseName} />
         </NavLink>
       );
@@ -167,7 +205,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
             sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
           >
             <MDTypography component="h6" variant="button" fontWeight="medium" color={textColor}>
-              {brandName}
+              Nautilus Software
             </MDTypography>
           </MDBox>
         </MDBox>
@@ -182,14 +220,14 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
       <MDBox p={2} mt="auto">
         <MDButton
           component="a"
-          href="https://www.creative-tim.com/product/material-dashboard-pro-react"
+          href="https://www.nautilus.pt/"
           target="_blank"
           rel="noreferrer"
           variant="gradient"
           color={sidenavColor}
           fullWidth
         >
-          upgrade to pro
+          I NEED HELP
         </MDButton>
       </MDBox>
     </SidenavRoot>

@@ -28,7 +28,6 @@ import team4 from "assets/images/team-4.jpg";
 
 // Function to format duration as Days:Hours:Minutes:Seconds
 const formatDuration = (seconds) => {
-  console.log("SECONDS", seconds);
   if (!seconds || isNaN(seconds)) return "0s";
   let h = Math.floor((seconds % (3600 * 24)) / 3600);
   let m = Math.floor((seconds % 3600) / 60);
@@ -51,7 +50,6 @@ export default async function fetchMachineLogs() {
     };
 
     const logs = await response.json();
-    console.log("Fetched usage logs:", logs);
 
     return {
       columns: [

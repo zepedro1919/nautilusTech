@@ -45,27 +45,27 @@ function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/machines")
-      .then((res) => {
-        console.log("Fetch Response:", res);
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.text(); // Get raw text response
-      })
-      .then((text) => {
-        console.log("Raw Response Text:", text);
-        return text ? JSON.parse(text) : [];
-      })
-      .then((data) => {
-        console.log("Parsed Data:", data);
-        setMachines(data);
-      })
-      .catch((error) => {
+    try {
+      fetch("http://localhost:5000/machines")
+        .then((res) => {
+          console.log("Fetch Response:", res);
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
+          return res.text(); // Get raw text response
+        })
+        .then((text) => {
+          console.log("Raw Response Text:", text);
+          return text ? JSON.parse(text) : [];
+        })
+        .then((data) => {
+          console.log("Parsed Data:", data);
+          setMachines(data);
+        })
+    } catch (error) {
         console.error("Fetch error:", error);
-      });
+    }
   }, []);
-  console.log("Machines state:", machines);
 
   return (
     <DashboardLayout>
@@ -74,14 +74,21 @@ function Dashboard() {
         <Grid container spacing={3}>
           {(Array.isArray(machines) ? machines : []).map((machine) => (
             <Grid item xs={12} md={6} lg={4} key={machine.id}>
-              <Card sx={{ p: 2, textAlign: "center", boxShadow: 3, cursor: "pointer" }} onClick={() => navigate(`/machines/${machine.id}`)}>
+              <Card sx={{ p: 2, textAlign: "center", boxShadow: 3, cursor: "pointer", transition: "transform 0.5s ease-in-out",
+                      "&:hover": {
+                        transform: "scale(1.05)",
+                      }, }} onClick={() => navigate(`/machines/${machine.id}`)} >
                 <MDBox
                   component="img"
                   src={machine.machine_photo_url}
                   alt={machine.name}
                   width="100%"
-                  height="200px"
-                  sx={{ objectFit: "cover", borderRadius: "10px" }}
+                  height="300px"
+                  sx=
+                  {{ 
+                    objectFit: "cover", 
+                    borderRadius: "10px",
+                  }}
                 />
                 <MDTypography variant="h6" mt={2}>
                   {machine.name}

@@ -29,12 +29,13 @@ import DataTable from "examples/Tables/DataTable";
 
 // Data
 import fetchMachineLogs from "layouts/tables/data/authorsTableData";
-import projectsTableData from "layouts/tables/data/projectsTableData";
+import fetchMaintenanceLogs from "layouts/tables/data/projectsTableData";
 
 import React, { useState, useEffect } from "react";
 
 const MachineUsageTable = () => {
   const [ usageData, setUsageData ] = useState({ columns: [], rows: [] });
+  const [maintenanceLogs, setMaintenanceLogs] = useState({ columns: [], rows: [] });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,8 +55,26 @@ const MachineUsageTable = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchMaintenanceData = async () => {
+      try {
+        const logs = await fetchMaintenanceLogs();
+        setMaintenanceLogs(prevData => {
+          if (JSON.stringify(prevData) !== JSON.stringify(logs)) {
+            return logs;
+          }
+          return prevData;
+        });
+      } catch (error) {
+        console.error("Error fetching maintenance logs:", error);
+      }
+    };
+
+    fetchMaintenanceData();
+  }, []);
+
   const { columns, rows } = usageData;
-  const { columns: pColumns, rows: pRows } = projectsTableData();
+  const { columns: maintenanceColumns, rows: maintenanceRows } = maintenanceLogs;
 
   return (
     <DashboardLayout>
@@ -107,7 +126,7 @@ const MachineUsageTable = () => {
               </MDBox>
               <MDBox pt={3}>
                 <DataTable
-                  table={{ columns: pColumns, rows: pRows }}
+                  table={{ columns: maintenanceColumns, rows: maintenanceRows }}
                   isSorted={false}
                   entriesPerPage={false}
                   showTotalEntries={false}

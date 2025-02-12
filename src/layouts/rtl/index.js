@@ -13,7 +13,10 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button, Typography, Card } from "@mui/material";
+import maintenanceStepsData from "./maintenanceSteps.json";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
@@ -40,9 +43,32 @@ import OrdersOverview from "layouts/rtl/components/OrdersOverview";
 // Material Dashboard 2 React contexts
 import { useMaterialUIController, setDirection } from "context";
 
-function RTL() {
+function MaintenanceTracker() {
   const [, dispatch] = useMaterialUIController();
-  const { sales, tasks } = reportsLineChartData;
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { alertId, machineId, machineName, maintenanceType, machinePhotoUrl } = location.state || {};
+  const [step, setStep] = useState(0);
+  const [steps, setSteps] = useState([]);
+  const [startTime, setStartTime] = useState(0);
+
+  useEffect(() => {
+    if (maintenanceStepsData[machineName] && maintenanceStepsData[machineName][maintenanceType]) {
+      setSteps(maintenanceStepsData[machineName][maintenanceType]);
+    }
+  }, [machineName, maintenanceType]);
+
+  const isLastStep = step === steps.length - 1;
+
+  const handleNextStep = () => {
+    if (!isLastStep) {
+      setStep(step + 1);
+    } else {
+      completeMaintenance();
+    }
+  };
 
   // Changing the direction to rtl
   useEffect(() => {
@@ -51,126 +77,111 @@ function RTL() {
     return () => setDirection(dispatch, "ltr");
   }, []);
 
+  useEffect(() => {
+    let interval;
+    if (isRunning) {
+      interval = setInterval(() => {
+        setElapsedTime((prevTime) => prevTime + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning]);
+
+  const handleStart = () => {
+    setStartTime(Math.floor(Date.now() / 1000));
+    setIsRunning(true);
+  };
+
+  const resolveAlert = async (alertId) => {
+    try {
+      console.log(`🔍 Attempting to resolve alert with ID: ${alertId}`);
+
+      const response = await fetch(`http://localhost:5000/resolve-alert/${alertId}`, { method: "PUT" });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Alert resolved successfully in DB:`, data);
+      
+      window.dispatchEvent(new CustomEvent("alertResolved", { detail: alertId }));
+      console.log(`📢 Event alertResolved dispatched for alert ID: ${alertId}`);
+
+    } catch (error) {
+      console.error("❌ Failed to resolve alert:", error);
+    }
+  };
+
+  const completeMaintenance = async () => {
+    setIsRunning(false);
+    const userId = JSON.parse(localStorage.getItem("user")).id;
+
+    resolveAlert(alertId);
+
+    const maintenanceData = {
+      machineId,
+      userId,
+      alertId,
+      maintenanceType,
+      startTime,
+      endTime: Math.floor(Date.now() / 1000),
+      duration: elapsedTime,
+    };
+
+    await fetch("http://localhost:5000/log-maintenance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(maintenanceData),
+    });
+
+    navigate("/notifications");
+  };
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox py={3}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <ComplexStatisticsCard
-                color="dark"
-                icon="weekend"
-                title="أموال اليوم"
-                count={281}
-                percentage={{
-                  color: "success",
-                  amount: "+55%",
-                  label: "من الأسبوع الماضي",
-                }}
-              />
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <ComplexStatisticsCard
-                icon="leaderboard"
-                title="مستخدمو اليوم"
-                count="2,300"
-                percentage={{
-                  color: "success",
-                  amount: "+3%",
-                  label: "من الأسبوع الماضي",
-                }}
-              />
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <ComplexStatisticsCard
-                color="success"
-                icon="store"
-                title="عملاء جدد"
-                count="34k"
-                percentage={{
-                  color: "success",
-                  amount: "+1%",
-                  label: "من الشهر الماضي",
-                }}
-              />
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <ComplexStatisticsCard
-                color="primary"
-                icon="person_add"
-                title="مبيعات"
-                count="+91"
-                percentage={{
-                  color: "success",
-                  amount: "",
-                  label: "مقارنة بيوم أمس",
-                }}
-              />
-            </MDBox>
-          </Grid>
-        </Grid>
-        <MDBox mt={4.5}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsBarChart
-                  color="info"
-                  title="مشاهدات الموقع"
-                  description="آخر أداء للحملة"
-                  date="الحملة أرسلت قبل يومين"
-                  chart={reportsBarChartData}
-                />
-              </MDBox>
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsLineChart
-                  color="success"
-                  title="المبيعات اليومية"
-                  description={
-                    <>
-                      (<strong>+15%</strong>) زيادة في مبيعات اليوم..
-                    </>
-                  }
-                  date="تم التحديث منذ 4 دقائق"
-                  chart={sales}
-                />
-              </MDBox>
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsLineChart
-                  color="dark"
-                  title="المهام المكتملة"
-                  description="آخر أداء للحملة"
-                  date="تم تحديثه للتو"
-                  chart={tasks}
-                />
-              </MDBox>
-            </Grid>
-          </Grid>
-        </MDBox>
-        <MDBox>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={8}>
-              <Projects />
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <OrdersOverview />
-            </Grid>
-          </Grid>
-        </MDBox>
+        <Card sx={{ p: 4, textAlign: "center", maxWidth: 500, margin: "auto" }}>
+          <Typography variant="h5">Maintenance in Progress</Typography>
+          <MDBox
+            component="img"
+            src={machinePhotoUrl}
+            alt={machineName}
+            width="100%"
+            height= "auto"
+            sx={{ objectFit: "cover", borderRadius: "10px" }}
+          />
+          <Typography variant="h6">{machineName}</Typography>
+          <Typography variant="h6">Maintenance Type: {maintenanceType}</Typography>
+          <Typography variant="h6">Elapsed Time: {elapsedTime} seconds</Typography>
+
+          <Button variant="contained" color="success" onClick={handleStart} disabled={isRunning}>
+            Start Maintenance
+          </Button>
+          <Button variant="contained" color="error" onClick={handleNextStep} disabled={!isRunning}>
+            {isLastStep ? "Complete Maintenance" : "Next Step"}
+          </Button>
+        </Card>
       </MDBox>
+      {steps.length > 0 && (
+        <MDBox py={3}>
+          <Card sx={{ p: 4, textAlign: "center", maxWidth: 500, margin: "auto" }}>
+            <Typography variant="h6">{steps[step].description}</Typography>
+            <MDBox
+              component="img"
+              src={steps[step].image}
+              alt={steps[step].description}
+              width="100%"
+              height= "auto"
+              sx={{ objectFit: "cover", borderRadius: "10px" }}
+            />
+          </Card>
+        </MDBox>
+      )}
       <Footer />
     </DashboardLayout>
   );
 }
 
-export default RTL;
+export default MaintenanceTracker;

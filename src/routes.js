@@ -39,7 +39,7 @@ Coded by www.creative-tim.com
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
 import Billing from "layouts/billing";
-import RTL from "layouts/rtl";
+import MaintenanceTracker from "layouts/rtl";
 import Notifications from "layouts/notifications";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
@@ -47,30 +47,17 @@ import SignIn from "layouts/authentication/sign-in";
 // @mui icons
 import Icon from "@mui/material/Icon";
 
-import { Navigate } from "react-router-dom";
-import PropTypes from "prop-types";
-
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/authentication/sign-in" />;
-};
-
-ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired, // This validates 'children' as a react node
-};
-
-const routes = [
+const routesConfig = (handleLogout) => [
   {
     type: "collapse",
-    name: "Dashboard",
+    name: "Machines",
     key: "dashboard",
     icon: <Icon fontSize="small">dashboard</Icon>,
     route: "/dashboard",
     component: (
-      <ProtectedRoute>
         <Dashboard />
-      </ProtectedRoute>
     ),
+    protected: true,
   },
   {
     type: "collapse",
@@ -79,22 +66,27 @@ const routes = [
     icon: <Icon fontSize="small">table_view</Icon>,
     route: "/tables",
     component: <Tables />,
+    protected: true,
   },
   {
     type: "collapse",
-    name: "Billing",
+    name: "Machine Usage",
     key: "billing",
     icon: <Icon fontSize="small">receipt_long</Icon>,
     route: "/machines/:id",
     component: <Billing />,
+    disabled: true,
+    protected: true,
   },
   {
     type: "collapse",
-    name: "RTL",
+    name: "Maintenance Tracker",
     key: "rtl",
     icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
-    route: "/rtl",
-    component: <RTL />,
+    route: "/maintenance-tracker",
+    component: <MaintenanceTracker />,
+    disabled: true,
+    protected: true,
   },
   {
     type: "collapse",
@@ -103,6 +95,7 @@ const routes = [
     icon: <Icon fontSize="small">notifications</Icon>,
     route: "/notifications",
     component: <Notifications />,
+    protected: true,
   },
   {
     type: "collapse",
@@ -111,15 +104,18 @@ const routes = [
     icon: <Icon fontSize="small">person</Icon>,
     route: "/profile",
     component: <Profile />,
+    protected: true,
   },
   {
     type: "collapse",
-    name: "Sign In",
-    key: "sign-in",
-    icon: <Icon fontSize="small">login</Icon>,
+    name: "Sign Out",
+    key: "sign-out",
+    icon: <Icon fontSize="small">logout</Icon>,
     route: "/authentication/sign-in",
     component: <SignIn />,
+    protected: false,
+    onClick: handleLogout,
   },
 ];
 
-export default routes;
+export default routesConfig;

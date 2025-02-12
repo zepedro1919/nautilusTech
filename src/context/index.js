@@ -123,7 +123,7 @@ const MaintenanceProvider = ({ children }) => {
 
   useEffect(() => {
     fetchMaintenanceAlerts();
-    const interval = setInterval(fetchMaintenanceAlerts, 30000); // Fetch every 30 seconds
+    const interval = setInterval(fetchMaintenanceAlerts, 3000000); // Fetch every 30 seconds
     return () => clearInterval(interval);
   }, []);
 

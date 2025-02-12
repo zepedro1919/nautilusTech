@@ -15,6 +15,7 @@ Coded by www.creative-tim.com
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // @mui material components
 import Card from "@mui/material/Card";
@@ -48,26 +49,24 @@ function Basic() {
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
   const handleLogin = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
+    fetch("http://localhost:5000/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Login Response:", data);
+      if (data.token) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/profile");
+        console.log("Navigating to /dashboard...");
+        navigate("/dashboard");
       } else {
-        alert(data.error);
+        console.log("Login failed:", data);
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Login failed!");
-    }
+    })
+    .catch(err => console.error("Error during login:", err));
   };
 
   return (

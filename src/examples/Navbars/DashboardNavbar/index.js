@@ -156,16 +156,18 @@ function DashboardNavbar({ absolute, light, isMini }) {
               <MDInput label="Search here" />
             </MDBox>
             <MDBox color={light ? "white" : "inherit"}>
-              <Link to="/authentication/sign-in/basic">
+              <Link to="/profile">
                 <IconButton sx={navbarIconButton} size="small" disableRipple>
                   <Icon sx={iconsStyle}>account_circle</Icon>
                 </IconButton>
               </Link>
-              <IconButton color="inherit">
-                <Badge badgeContent={alerts.length} color="error">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
+              <Link to="/Notifications">
+                <IconButton color="inherit">
+                  <Badge badgeContent={alerts.length} color="error">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+                </Link>
               <IconButton
                 size="small"
                 disableRipple
@@ -185,18 +187,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 onClick={handleConfiguratorOpen}
               >
                 <Icon sx={iconsStyle}>settings</Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                disableRipple
-                color="inherit"
-                sx={navbarIconButton}
-                aria-controls="notification-menu"
-                aria-haspopup="true"
-                variant="contained"
-                onClick={handleOpenMenu}
-              >
-                <Icon sx={iconsStyle}>notifications</Icon>
               </IconButton>
               {renderMenu()}
             </MDBox>

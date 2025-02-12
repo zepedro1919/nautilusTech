@@ -1,0 +1,41 @@
+{
+    "M-CNC301": {
+      "A cada 8 horas": [
+        {
+            "description": "Step 1: Limpeza do depósito sob trave",
+            "image": "https://res.cloudinary.com/dd4qhro5e/image/upload/v1738945390/limpeza_do_deposito_sob_trave_dorlvy.jpg"
+        },
+        {
+            "description": "Step 2: Limpeza da bomba de vácuo",
+            "image": "https://res.cloudinary.com/dd4qhro5e/image/upload/v1738945380/limpeza_da_bomba_de_vacuo_cd3but.jpg"
+        },
+        {
+            "description": "Step 3: Limpeza electromandril e verificação funcionamento",
+            "image": "https://res.cloudinary.com/dd4qhro5e/image/upload/v1738945396/limpeza_electromandril_nkqwa4.jpg"
+        },
+        {
+            "description": "Step 4: Limpeza dos cones",
+            "image": "https://res.cloudinary.com/dd4qhro5e/image/upload/v1738945394/limpeza_dos_cones_xjw0xv.jpg"
+        },
+        {
+            "description": "Step 5: Limpeza da cremalheira do eixo x",
+            "image": "https://res.cloudinary.com/dd4qhro5e/image/upload/v1738945386/Limpeza_da_cremalheira_do_eixo_x_dwxkbx.jpg"
+        },
+        {
+            "description": "Step 6: Manutenção do grupo filtro-regulador",
+            "image": "https://res.cloudinary.com/dd4qhro5e/image/upload/v1738945398/manutencao_do_grupo_filtro_regulador_kp1k4e.jpg"
+        }
+      ],
+      "A cada 15 horas": [
+        "Step 1: Lubricate the automatic recirculation pads.",
+        "Step 2: Inspect all moving parts for wear.",
+        "Final Step: Ensure smooth movement and confirm completion."
+      ],
+      "A cada 24 horas": [
+        "Step 1: Lubricate the automatic recirculation pads.",
+        "Step 2: Inspect all moving parts for wear.",
+        "Final Step: Ensure smooth movement and confirm completion."
+      ]
+    }
+  }
+  
