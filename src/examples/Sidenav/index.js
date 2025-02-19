@@ -227,7 +227,7 @@ function Sidenav({ color, brand, brandName, routes, handleLogout, ...rest }) {
           color={sidenavColor}
           fullWidth
         >
-          I NEED HELP
+          HELP
         </MDButton>
       </MDBox>
     </SidenavRoot>

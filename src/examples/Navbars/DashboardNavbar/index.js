@@ -63,12 +63,17 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const [openMenu, setOpenMenu] = useState(false);
   const route = useLocation().pathname.split("/").slice(1);
   const [alerts, setAlerts] = useState([]);
+  const storedUser = localStorage.getItem("user");
 
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/maintenance-alerts");
-        setAlerts(response.data);
+        if (storedUser.id) {
+          const response = await axios.get(`http://localhost:5000/maintenance-alerts?userID=${storedUser.id}`);
+          setAlerts(response.data);
+        } else {
+          console.log("User id is not yet in local storage");
+        }
       } catch (error) {
         console.error("Error fetching maintenance alerts:", error);
       }

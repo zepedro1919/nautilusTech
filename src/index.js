@@ -17,9 +17,11 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "App";
+import { UserProvider } from "context/userContext";
 
 // Material Dashboard 2 React Context Provider
-import { MaterialUIControllerProvider, MaintenanceProvider } from "context";
+import { MaterialUIControllerProvider } from "context";
+import {MaintenanceProvider} from "context/maintenanceContext";
 
 const container = document.getElementById("app");
 const root = createRoot(container);
@@ -28,7 +30,9 @@ root.render(
   <BrowserRouter>
     <MaterialUIControllerProvider>
       <MaintenanceProvider>
-        <App />
+        <UserProvider>
+          <App />
+        </UserProvider>
       </MaintenanceProvider>
     </MaterialUIControllerProvider>
   </BrowserRouter>

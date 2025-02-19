@@ -1,21 +1,7 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import UserContext from "context/userContext";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
@@ -25,8 +11,6 @@ import Card from "@mui/material/Card";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDAlert from "components/MDAlert";
-import MDButton from "components/MDButton";
-import MDSnackbar from "components/MDSnackbar";
 
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -36,13 +20,13 @@ import Footer from "examples/Footer";
 function Notifications() {
   const [alerts, setAlerts] = useState([]);
   const navigate  = useNavigate();
+  const { fetchAndUpdateScore } = useContext(UserContext);
 
   const maintenanceRealization = async (alertId, machineId, machineName, maintenanceType, machinePhotoUrl) => {
     try {
       navigate('/maintenance-tracker', {
         state: { alertId, machineId, machineName, maintenanceType, machinePhotoUrl }
       });
-    
     } catch (error) {
       console.error("Failed to resolve alert:", error);
     }
@@ -54,16 +38,27 @@ function Notifications() {
   };
 
   useEffect(() => {
-    const fetchAlerts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/maintenance-alerts");
-        setAlerts(response.data);
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        const userId = storedUser ? storedUser.id : null;
+
+        if (!userId) {
+          console.error("User Id is missing in localStorage");
+        } else {
+          fetch(`http://localhost:5000/maintenance-alerts?userId=${userId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (Array.isArray(data)) {
+              setAlerts(data);
+            } else {
+              console.log("Expected array but got:", data);
+            }
+          })
+          .catch((err) => console.error("Error fetching maintenance alerts:", err));
+        }
       } catch (error) {
         console.error("Error fetching maintenance alerts:", error);
       }
-    };
-
-    fetchAlerts();
 
   }, []);
 
@@ -72,6 +67,9 @@ function Notifications() {
     const handleAlertResolved = (event) => {
       const resolvedAlertId = event.detail; // Extract alertId from event
       console.log("📩 Alert Resolved Event Fired, ID:", resolvedAlertId);
+
+      fetchAndUpdateScore();
+
       dismissAlert(resolvedAlertId); // Call dismissAlert when an alert is resolved
     };
 

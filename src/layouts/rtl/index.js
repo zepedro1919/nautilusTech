@@ -1,25 +1,7 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Typography, Card } from "@mui/material";
 import maintenanceStepsData from "./maintenanceSteps.json";
-
-// @mui material components
-import Grid from "@mui/material/Grid";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -28,17 +10,6 @@ import MDBox from "components/MDBox";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
-import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
-import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
-import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
-
-// Data
-import reportsBarChartData from "layouts/rtl/data/reportsBarChartData";
-import reportsLineChartData from "layouts/rtl/data/reportsLineChartData";
-
-// RTL components
-import Projects from "layouts/rtl/components/Projects";
-import OrdersOverview from "layouts/rtl/components/OrdersOverview";
 
 // Material Dashboard 2 React contexts
 import { useMaterialUIController, setDirection } from "context";
@@ -53,6 +24,13 @@ function MaintenanceTracker() {
   const [step, setStep] = useState(0);
   const [steps, setSteps] = useState([]);
   const [startTime, setStartTime] = useState(0);
+
+  useEffect(() => {
+    if (!alertId || !machineId) {
+      console.error("Missing state data, redirecting...");
+      navigate("/notifications");
+    }
+  }, [alertId, machineId, navigate]);
 
   useEffect(() => {
     if (maintenanceStepsData[machineName] && maintenanceStepsData[machineName][maintenanceType]) {
@@ -74,7 +52,9 @@ function MaintenanceTracker() {
   useEffect(() => {
     setDirection(dispatch, "rtl");
 
-    return () => setDirection(dispatch, "ltr");
+    return () => {
+      setDirection(dispatch, "ltr");
+    };
   }, []);
 
   useEffect(() => {

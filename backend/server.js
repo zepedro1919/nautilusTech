@@ -22,8 +22,20 @@ app.get("/api/protected-data", authenticateToken, async (req, res) => {
 
 app.get('/machines', async (req, res) => {
   try {
-    const machines = await pool.query("SELECT * FROM machines");
-    console.log("Machines from DB:", machines.rows);
+    const userId = req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const machines = await pool.query(`
+        SELECT m.*
+        FROM machines m
+        JOIN machine_users mu ON m.id = mu.machine_id
+        WHERE mu.user_id = $1
+        ORDER BY m.id
+    `, [userId]);
+
+    console.log("Machines for user:", userId, machines.rows);
     res.json(machines.rows);
   } catch (error) {
     console.error("Error fetching machines:", error);
@@ -67,13 +79,24 @@ app.get("/machine-usage", async (req, res) => {
 
 app.get("/maintenance-alerts", async (req, res) => {
   try {
+    const { userId } = req.query;
+
+    console.log("Received userId:", userId);
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
     const result = await pool.query(`
-      SELECT ma.id, ma.machine_id, m.name AS machine_name, ma.alert_message, ma.created_at, ma.maintenance_type, m.machine_photo_url
+      SELECT DISTINCT ON (ma.id) ma.id, ma.machine_id, m.name AS machine_name, ma.alert_message, ma.created_at, ma.maintenance_type, m.machine_photo_url
       FROM maintenance_alerts ma
       JOIN machines m ON ma.machine_id = m.id
+      JOIN machine_users mu ON m.id = mu.machine_id
       WHERE ma.resolved = false
-      ORDER BY ma.created_at DESC;
-    `);
+      AND (mu.user_id = $1 OR m.is_general_use = true)
+      ORDER BY ma.id, ma.created_at DESC;
+    `, [userId]);
+
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching alerts:", error);
@@ -99,6 +122,103 @@ app.get("/maintenance-logs", async (req, res) => {
   } catch (error) {
     console.error("Error fetching maintenance logs:", error);
     res.status(500).json({ error: "Failed to fetch logs" });
+  }
+});
+
+app.get("/api/update-maintenance-scores", async (req, res) => {
+  try {
+    await pool.query(`
+      UPDATE users
+      SET maintenance_score = CASE
+        WHEN (
+          SELECT COUNT(*) FROM maintenance_alerts ma
+          JOIN machine_users mu ON ma.machine_id = mu.machine_id
+          WHERE mu.user_id = users.id AND ma.resolved = false
+        ) > 0 THEN 'D-'
+        ELSE (
+          SELECT CASE
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 600 THEN 'A+'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 3600 THEN 'A'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 7200 THEN 'A-'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 14400 THEN 'B+'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 28800 THEN 'B'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 57600 THEN 'B-'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 115200 THEN 'C+'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 230400 THEN 'C'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 460800 THEN 'C-'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 921600 THEN 'D+'
+            WHEN AVG(EXTRACT(EPOCH FROM (ma.resolved_at - ma.created_at))) <= 1843200 THEN 'D'
+            ELSE 'D-'
+          END
+          FROM maintenance_alerts ma
+          JOIN machine_users mu ON ma.machine_id = mu.machine_id
+          WHERE mu.user_id = users.id AND ma.resolved = true
+        )
+      END;
+    `);
+
+    res.json({ message: "User maintenance scores updated!" });
+  } catch (error) {
+    console.error("Error updating scores:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/api/user/:id", async (req, res) => {
+  const userId = req.params.id;
+
+  if(!userId) {
+    return res.status(400).json({ error: "User ID is required" });
+  }
+
+  try {
+    const result = await pool.query("SELECT * FROM users WHERE id = $1", [userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = result.rows[0];
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      position: user.position,
+      profilePhoto: user.photo,
+      maintenanceScore: user.maintenance_score,
+    });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ error: "server error" });
+  }
+})
+
+app.get("/api/maintenance-leaderboard", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, name, photo, maintenance_score
+      FROM users
+      ORDER BY
+        CASE
+          WHEN maintenance_score = 'A+' THEN 1
+          WHEN maintenance_score = 'A' THEN 2
+          WHEN maintenance_score = 'A-' THEN 3
+          WHEN maintenance_score = 'B+' THEN 4
+          WHEN maintenance_score = 'B' THEN 5
+          WHEN maintenance_score = 'B-' THEN 6
+          WHEN maintenance_score = 'C+' THEN 7
+          WHEN maintenance_score = 'C' THEN 8
+          WHEN maintenance_score = 'C-' THEN 9
+          WHEN maintenance_score = 'D+' THEN 10
+          WHEN maintenance_score = 'D' THEN 11
+          WHEN maintenance_score = 'D-' THEN 12
+          ELSE 13
+        END
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -135,7 +255,7 @@ app.post("/api/login", async (req, res) => {
 
     res.json({
       token: token,
-      user: { id: user.id, name: user.name, position: user.position, profilePhoto: user.photo }
+      user: { id: user.id, name: user.name, position: user.position, profilePhoto: user.photo, maintenanceScore: user.maintenance_score }
     });
 
   } catch (error) {
@@ -156,8 +276,6 @@ app.post("/machine-usage", async (req, res) => {
   try {
     const { machineId, userId, startTime, endTime, duration } = req.body;
 
-    console.log("Received data:", req.body);
-
     // Insert usage session
     await pool.query(
       `INSERT INTO machine_usage (machine_id, user_id, start_time, stop_time, duration)
@@ -166,7 +284,7 @@ app.post("/machine-usage", async (req, res) => {
     );
 
     // Trigger maintenance check
-    await fetch("http://localhost:5000/check-maintenance", { method: "POST" });
+    await fetch(`http://localhost:5000/check-maintenance?machineId=${machineId}`, { method: "POST" });
 
     res.json({ message: "Usage logged and maintenance checked" });
   } catch (err) {
@@ -177,10 +295,11 @@ app.post("/machine-usage", async (req, res) => {
 
 app.post("/check-maintenance", async (req, res) => {
   try {
+    machineId = req.query.machineId;
     // Get all predefined maintenance intervals for this machine
     const maintenanceIntervals = await pool.query(`
-      SELECT * FROM maintenance_intervals WHERE machine_id = 1  
-    `);
+      SELECT * FROM maintenance_intervals WHERE machine_id = $1  
+    `, [machineId]);
 
     // Select the date of the date of the last resolved maintenance
     const result = await pool.query(`
