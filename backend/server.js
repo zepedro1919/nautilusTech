@@ -395,7 +395,7 @@ app.put ("/resolve-alert/:id", async (req, res) => {
   }
 });
 
-const PORT = https://nautilustech.onrender.com || 5000;
+const PORT = process.env.PORT || 5000;
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
