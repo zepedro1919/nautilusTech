@@ -12,9 +12,9 @@ app.use(cors());
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
-
-const MAINTENANCE_THRESHOLD_HOURS = 100; // threshold = limite
+module.exports = pool;
 
 app.get("/api/protected-data", authenticateToken, async (req, res) => {
   res.json({ message: "This is protected data!", user: req.user });
