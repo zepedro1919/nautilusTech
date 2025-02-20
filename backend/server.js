@@ -294,6 +294,7 @@ app.post("/machine-usage", async (req, res) => {
 });
 
 app.post("/check-maintenance", async (req, res) => {
+  console.log("Entered Check Maintenance");
   try {
     machineId = req.query.machineId;
     // Get all predefined maintenance intervals for this machine
