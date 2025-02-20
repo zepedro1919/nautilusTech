@@ -284,7 +284,7 @@ app.post("/machine-usage", async (req, res) => {
     );
 
     // Trigger maintenance check
-    await fetch(`http://localhost:5000/check-maintenance?machineId=${machineId}`, { method: "POST" });
+    await fetch(`https://nautilustech.onrender.com/check-maintenance?machineId=${machineId}`, { method: "POST" });
 
     res.json({ message: "Usage logged and maintenance checked" });
   } catch (err) {
@@ -294,7 +294,6 @@ app.post("/machine-usage", async (req, res) => {
 });
 
 app.post("/check-maintenance", async (req, res) => {
-  console.log("Entered Check Maintenance");
   try {
     machineId = req.query.machineId;
     // Get all predefined maintenance intervals for this machine
